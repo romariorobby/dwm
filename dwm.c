@@ -41,6 +41,7 @@
 #endif /* XINERAMA */
 #include <X11/Xft/Xft.h>
 
+#include "patches.h"
 #include "drw.h"
 #include "util.h"
 
@@ -1640,8 +1641,10 @@ sigchld(int unused)
 void
 spawn(const Arg *arg)
 {
+#if DEFAULT && KEYMAP == 0
 	if (arg->v == dmenucmd)
 		dmenumon[0] = '0' + selmon->num;
+#endif
 	if (fork() == 0) {
 		if (dpy)
 			close(ConnectionNumber(dpy));
