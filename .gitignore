@@ -5,3 +5,5 @@ drw.o
 *.orig
 *.rej
 patches
+patches.h
+config.h
