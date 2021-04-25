@@ -17,6 +17,9 @@ static Key keys[] = {
 	{ MODKEY,             			XK_Return, 		spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      		togglebar,      {0} },
 	{ MODKEY,                       XK_j,      		focusstack,     {.i = +1 } },
+	#if STICKY_PATCH
+	{ MODKEY,                       XK_s,      		togglesticky,   {0} },
+	#endif
 	{ MODKEY,                       XK_k,      		focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_o,      		incnmaster,     {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_o,      		incnmaster,     {.i = -1 } },

@@ -1,3 +1,6 @@
 #if ATTACHABOVE_PATCH || ATTACHASIDE_PATCH || ATTACHBELOW_PATCH || ATTACHBOTTOM_PATCH || ATTACHASIDEBELOW_PATCH
 #include "attachx.h"
 #endif
+#if STICKY_PATCH
+#include "sticky.h"
+#endif

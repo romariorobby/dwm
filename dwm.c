@@ -50,9 +50,14 @@
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 #define INTERSECT(x,y,w,h,m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
                                * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
-#if ATTACHASIDE_PATCH || ATTACHASIDEBELOW_PATCH
+#if ATTACHASIDE_PATCH || ATTACHASIDEBELOW_PATCH && STICKY_PATCH
+#define ISVISIBLEONTAG(C ,T) 	((C->tags & T) || C->issticky)
+#define ISVISIBLE(C)            ISVISIBLEONTAG(C, C->mon->tagset[C->mon->seltags])
+#elif ATTACHASIDE_PATCH || ATTACHASIDEBELOW_PATCH
 #define ISVISIBLEONTAG(C ,T) 	((C->tags & T))
 #define ISVISIBLE(C)            ISVISIBLEONTAG(C, C->mon->tagset[C->mon->seltags])
+#elif STICKY_PATCH
+#define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]) || C->issticky)
 #else
 #define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]))
 #endif
@@ -99,6 +104,9 @@ struct Client {
 	int bw, oldbw;
 	unsigned int tags;
 	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
+	#if STICKY_PATCH
+	int issticky;
+	#endif // STICKY_PATCH
 	Client *next;
 	Client *snext;
 	Monitor *mon;
