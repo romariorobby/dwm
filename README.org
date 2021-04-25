@@ -9,8 +9,9 @@ dwm is an extremely fast, small, and dynamic window manager for X.
   - [X] Bottom
   - [X] Aside Below
 - [X] Swallow
-- [ ] Pertag
 - [ ] Scrathpads
+- [ ] Fullscreen Compilation
+- [ ] Pertag
 - [ ] Dwmblocks
 
   |-----+---+---+---+---|
