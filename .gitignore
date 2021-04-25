@@ -4,6 +4,5 @@ dwm.o
 drw.o
 *.orig
 *.rej
-patches
-patches.h
+patch.h
 config.h
