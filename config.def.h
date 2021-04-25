@@ -7,21 +7,8 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const char *fonts[]          = { "monospace:size=10" };
 static const char dmenufont[]       = "monospace:size=10";
-//TODO: Better handle when multiple values 1
-// else should be default one
-// For now you need to make sure turn one of them
-#if GRUVBOX_DARK
-#include "themes/gruvbox_dark.h"
-#endif
-#if GRUVBOX_MEDIUM
-#include "themes/gruvbox_medium.h"
-#endif
-#if GRUVBOX_LIGHT
-#include "themes/gruvbox_light.h"
-#endif
-#if DEFAULT
-#include "themes/default.h"
-#endif
+
+#include "theme.h"
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
