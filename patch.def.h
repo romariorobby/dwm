@@ -3,9 +3,9 @@
 
 /* Themes */
 // Default
-#define DEFAULT 1
+#define DEFAULT 0
 // GRUVBOX 
-#define GRUVBOX_DARK 0
+#define GRUVBOX_DARK 1
 #define GRUVBOX_MEDIUM 0
 #define GRUVBOX_LIGHT 0
 
@@ -17,4 +17,6 @@
 #define ATTACHASIDEBELOW_PATCH 0
 
 /* Sticky */
-#define STICKY_PATCH 0
+#define STICKY_PATCH 1
+
+#define SWALLOW_PATCH 1

@@ -1,9 +1,16 @@
 /* See LICENSE file for copyright and license details. */
+#define TERM "st"
+#define TERMC "St"
+#define TERM1 "kitty"
+#define TERMC1 "kitty"
 
 /* appearance */
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
+#if SWALLOW_PATCH
+static const int swallowfloating    = 0;        /* 1 means swallow floating windows by default */
+#endif
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const char *fonts[]          = { "monospace:size=10" };
 static const char dmenufont[]       = "monospace:size=10";
@@ -12,15 +19,28 @@ static const char dmenufont[]       = "monospace:size=10";
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
+/* xprop(1):
+ *	WM_CLASS(STRING) = instance, class
+ *	WM_NAME(STRING) = title
+ */
+#if SWALLOW_PATCH
 static const Rule rules[] = {
-	/* xprop(1):
-	 *	WM_CLASS(STRING) = instance, class
-	 *	WM_NAME(STRING) = title
-	 */
+	/* class     	 instance    title            tags mask     isfloating  isterminal  noswallow   monitor */
+	{ "Gimp",     	  NULL,       NULL,            0,            1,          0,			 0,           -1 },
+	{ "Firefox",  	  NULL,       NULL,            3 << 8,       0,          0, 	    -1,			  -1 },
+	{ TERMC,  		  NULL,    	  NULL,       	   0,       	 0,          1,			 0,			  -1 },
+	{ TERMC1,  	  	  NULL,       NULL,            0,       	 0,          1,			 0,			  -1 },
+	{ "Vieb",  	  	  NULL,       NULL,            1 << 4,       0,          0,			 0,			  -1 },
+	{ NULL,  	  	  NULL,       "Event Tester",  0,       	 0,          0,			 1,			  -1 },  /* xev */
+
+};
+#else
+static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 };
+#endif
 
 /* layout(s) */
 static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
@@ -51,7 +71,7 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
-static const char *termcmd[]  = { "st", NULL };
+static const char *termcmd[]  = { TERM, NULL };
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },

@@ -107,8 +107,15 @@ struct Client {
 	#if STICKY_PATCH
 	int issticky;
 	#endif // STICKY_PATCH
+	#if SWALLOW_PATCH
+	int isterminal, noswallow;
+	pid_t pid;
+	#endif
 	Client *next;
 	Client *snext;
+	#if SWALLOW_PATCH
+	Client *swallowing;
+	#endif
 	Monitor *mon;
 	Window win;
 };
@@ -152,6 +159,10 @@ typedef struct {
 	const char *title;
 	unsigned int tags;
 	int isfloating;
+	#if SWALLOW_PATCH
+	int isterminal;
+	int noswallow;
+	#endif
 	int monitor;
 } Rule;
 
@@ -315,6 +326,10 @@ applyrules(Client *c)
 		&& (!r->class || strstr(class, r->class))
 		&& (!r->instance || strstr(instance, r->instance)))
 		{
+			#if SWALLOW_PATCH
+			c->isterminal = r->isterminal;
+			c->noswallow = r->noswallow;
+			#endif
 			c->isfloating = r->isfloating;
 			c->tags |= r->tags;
 			for (m = mons; m && m->num != r->monitor; m = m->next);
@@ -670,6 +685,10 @@ destroynotify(XEvent *e)
 
 	if ((c = wintoclient(ev->window)))
 		unmanage(c, 1);
+	#if SWALLOW_PATCH
+	else if ((c = swallowingclient(ev->window)))
+		unmanage(c->swallowing, 1);
+	#endif
 }
 
 void
@@ -1035,12 +1054,19 @@ killclient(const Arg *arg)
 void
 manage(Window w, XWindowAttributes *wa)
 {
+	#if SWALLOW_PATCH
+	Client *c, *t = NULL, *term = NULL;
+	#else
 	Client *c, *t = NULL;
+	#endif
 	Window trans = None;
 	XWindowChanges wc;
 
 	c = ecalloc(1, sizeof(Client));
 	c->win = w;
+	#if SWALLOW_PATCH
+	c->pid = winpid(w);
+	#endif
 	/* geometry */
 	c->x = c->oldx = wa->x;
 	c->y = c->oldy = wa->y;
@@ -1055,6 +1081,9 @@ manage(Window w, XWindowAttributes *wa)
 	} else {
 		c->mon = selmon;
 		applyrules(c);
+		#if SWALLOW_PATCH
+		term = termforwin(c);
+		#endif
 	}
 
 	if (c->x + WIDTH(c) > c->mon->mx + c->mon->mw)
@@ -1095,6 +1124,10 @@ manage(Window w, XWindowAttributes *wa)
 	c->mon->sel = c;
 	arrange(c->mon);
 	XMapWindow(dpy, c->win);
+	#if SWALLOW_PATCH
+	if (term)
+		swallow(term,c);
+	#endif
 	focus(NULL);
 }
 
@@ -1795,6 +1828,22 @@ unmanage(Client *c, int destroyed)
 	Monitor *m = c->mon;
 	XWindowChanges wc;
 
+	#if SWALLOW_PATCH
+	if (c->swallowing){
+		unswallow(c);
+		return;
+	}
+
+	Client *s = swallowingclient(c->win);
+	if (s) {
+		free(s->swallowing);
+		s->swallowing = NULL;
+		arrange(m);
+		focus(NULL);
+		return;
+	}
+	#endif
+
 	detach(c);
 	detachstack(c);
 	if (!destroyed) {
@@ -1809,9 +1858,17 @@ unmanage(Client *c, int destroyed)
 		XUngrabServer(dpy);
 	}
 	free(c);
+	#if SWALLOW_PATCH
+	if (!s) {
+		arrange(m);
+		focus(NULL);
+		updateclientlist();
+	}
+	#else
 	focus(NULL);
 	updateclientlist();
 	arrange(m);
+	#endif
 }
 
 void
@@ -2169,10 +2226,18 @@ main(int argc, char *argv[])
 		fputs("warning: no locale support\n", stderr);
 	if (!(dpy = XOpenDisplay(NULL)))
 		die("dwm: cannot open display");
+	#if SWALLOW_PATCH
+	if (!(xcon = XGetXCBConnection(dpy)))
+		die("dwm: cannot get xcb connection\n");
+	#endif
 	checkotherwm();
 	setup();
 #ifdef __OpenBSD__
+	#if SWALLOW_PATCH
+	if (pledge("stdio rpath proc exec ps", NULL) == -1)
+	#else
 	if (pledge("stdio rpath proc exec", NULL) == -1)
+	#endif
 		die("pledge");
 #endif /* __OpenBSD__ */
 	scan();
