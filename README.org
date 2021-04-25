@@ -2,3 +2,16 @@
 dwm is an extremely fast, small, and dynamic window manager for X.
 
 * My Patches
+- [X] Attachadirection
+  - [X] Above
+  - [X] Aside
+  - [X] Below
+  - [X] Bottom
+  - [X] Aside Below
+- [ ] Pertag
+- [ ] Scrathpads
+- [ ] Dwmblocks
+
+  |-----+---+---+---+---|
+  | [ ] | x | y |   |   |
+  | [X] | y | x |   |   |
