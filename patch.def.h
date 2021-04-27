@@ -10,6 +10,7 @@
 #define GRUVBOX_LIGHT 0
 
 /* ATTACHDIR */
+// 1 or another
 #define ATTACHABOVE_PATCH 0
 #define ATTACHASIDE_PATCH 0
 #define ATTACHBELOW_PATCH 1
@@ -23,6 +24,22 @@
 // You have to uncomment xcb from config.mk
 #define SWALLOW_PATCH 1
 
-#define UNDERLINETAGS 1
-#define LITTEBOXTAGS 1
+#define UNDERLINETAGS_PATCH 1
+#define LITTLEBOXTAGS_PATCH 1
 
+// Move to another monitor while in Fullscreen mode
+#define TAGMONFIXFS_PATCH 1
+
+/* Fullscreen */
+// Toggle fullscreen (actualfullscreen)
+#define FULLSCREEN_PATCH 1
+/* #define FULLSCREENALIKE_PATCH 0 */
+// Prevent Focus to another window when fullscreen
+#define LOSEFULLSCREEN_PATCH 1
+
+/* Fake Fullscreen */
+// 1 or another
+// Global Fakefullscreen
+#define FAKEFULLSCREEN_PATCH 0
+// Toggle fake fullscreen
+#define FAKEFULLSCREEN_CLIENT_PATCH 1

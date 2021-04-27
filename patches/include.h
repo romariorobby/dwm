@@ -7,3 +7,9 @@
 #if SWALLOW_PATCH
 #include "swallow.h"
 #endif
+#if FULLSCREEN_PATCH
+#include "fullscreen.h"
+#endif
+#if FAKEFULLSCREEN_CLIENT_PATCH
+#include "fakefullscreenclient.h"
+#endif

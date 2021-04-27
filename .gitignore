@@ -6,3 +6,4 @@ drw.o
 *.rej
 patch.h
 config.h
+todo

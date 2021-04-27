@@ -104,6 +104,9 @@ struct Client {
 	int bw, oldbw;
 	unsigned int tags;
 	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
+	#if !FAKEFULLSCREEN_PATCH && FAKEFULLSCREEN_CLIENT_PATCH
+	int fakefullscreen;
+	#endif // FAKEFULLSCREEN_CLIENT_PATCH
 	#if STICKY_PATCH
 	int issticky;
 	#endif // STICKY_PATCH
@@ -239,7 +242,11 @@ static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
+#if LOSEFULLSCREEN_PATCH
+static void unfocus(Client *c, int setfocus, Client *nextfocus);
+#else
 static void unfocus(Client *c, int setfocus);
+#endif
 static void unmanage(Client *c, int destroyed);
 static void unmapnotify(XEvent *e);
 static void updatebarpos(Monitor *m);
@@ -458,7 +465,12 @@ buttonpress(XEvent *e)
 	click = ClkRootWin;
 	/* focus monitor if necessary */
 	if ((m = wintomon(ev->window)) && m != selmon) {
+		#if LOSEFULLSCREEN_PATCH
+		// TODO:FIX THIS
+		unfocus(selmon->sel, 1, NULL);
+		#else
 		unfocus(selmon->sel, 1);
+		#endif
 		selmon = m;
 		focus(NULL);
 	}
@@ -552,10 +564,20 @@ clientmessage(XEvent *e)
 		return;
 	if (cme->message_type == netatom[NetWMState]) {
 		if (cme->data.l[1] == netatom[NetWMFullscreen]
-		|| cme->data.l[2] == netatom[NetWMFullscreen])
+		|| cme->data.l[2] == netatom[NetWMFullscreen]) {
+			#if FAKEFULLSCREEN_CLIENT_PATCH
+			if (c->fakefullscreen == 2 && c->isfullscreen)
+				c->fakefullscreen = 3;
+			#endif // FAKEFULLSCREEN_CLIENT_PATCH
 			setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD    */
-				|| (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */ && !c->isfullscreen)));
+				|| (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */
+				#if !FAKEFULLSCREEN_PATCH
+				&& !c->isfullscreen
+				#endif // !FAKEFULLSCREEN_PATCH
+			)));
+		}
 	} else if (cme->message_type == netatom[NetActiveWindow]) {
+
 		if (c != selmon->sel && !c->isurgent)
 			seturgent(c, 1);
 	}
@@ -584,7 +606,9 @@ void
 configurenotify(XEvent *e)
 {
 	Monitor *m;
+	#if !FAKEFULLSCREEN_PATCH
 	Client *c;
+	#endif // !FAKEFULLSCREEN_PATCH
 	XConfigureEvent *ev = &e->xconfigure;
 	int dirty;
 
@@ -597,9 +621,15 @@ configurenotify(XEvent *e)
 			drw_resize(drw, sw, bh);
 			updatebars();
 			for (m = mons; m; m = m->next) {
+				#if !FAKEFULLSCREEN_PATCH
 				for (c = m->clients; c; c = c->next)
+					#if FAKEFULLSCREEN_CLIENT_PATCH
+					if (c->isfullscreen && c->fakefullscreen != 1)
+					#else
 					if (c->isfullscreen)
+					#endif // FULLSCREEN_CLIENT
 						resizeclient(c, m->mx, m->my, m->mw, m->mh);
+				#endif // !FAKEFULLSCREEN_PATCH
 				XMoveResizeWindow(dpy, m->barwin, m->wx, m->by, m->ww, bh);
 			}
 			focus(NULL);
@@ -755,17 +785,17 @@ drawbar(Monitor *m)
 		w = TEXTW(tags[i]);
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
 		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
-		#if UNDERLINETAGS
+		#if UNDERLINETAGS_PATCH
 		if (ulineall || m->tagset[m->seltags] & 1 << i) /* if there are conflicts, just move these lines directly underneath both 'drw_setscheme' and 'drw_text' :) */
 			drw_rect(drw, x + ulinepad, bh - ulinestroke - ulinevoffset, w - (ulinepad * 2), ulinestroke, 1, 0);
-		#endif
-		#if LITTLEBOXTAGS
+		#endif // UNDERLINETAGS_PATCH
+		#if LITTLEBOXTAGS_PATCH
 		/* Litte Box */
 		if (occ & 1 << i)
 			drw_rect(drw, x + boxs, boxs, boxw, boxw,
 				m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
 				urg & 1 << i);
-		#endif
+		#endif // LITTERBOXTAGS_PATCH
 		x += w;
 	}
 	w = blw = TEXTW(m->ltsymbol);
@@ -798,7 +828,10 @@ drawbars(void)
 void
 enternotify(XEvent *e)
 {
-	Client *c;
+	Client *c; 
+	#if LOSEFULLSCREEN_PATCH
+	Client *sel; 
+	#endif
 	Monitor *m;
 	XCrossingEvent *ev = &e->xcrossing;
 
@@ -807,8 +840,14 @@ enternotify(XEvent *e)
 	c = wintoclient(ev->window);
 	m = c ? c->mon : wintomon(ev->window);
 	if (m != selmon) {
+		#if LOSEFULLSCREEN_PATCH
+		sel = selmon->sel;
+		selmon = m;
+		unfocus(sel, 1, c);
+		#else
 		unfocus(selmon->sel, 1);
 		selmon = m;
+		#endif
 	} else if (!c || c == selmon->sel)
 		return;
 	focus(c);
@@ -830,7 +869,12 @@ focus(Client *c)
 	if (!c || !ISVISIBLE(c))
 		for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext);
 	if (selmon->sel && selmon->sel != c)
+		#if LOSEFULLSCREEN_PATCH
+		// TODO: FIx this
+		unfocus(selmon->sel, 0, c);
+		#else
 		unfocus(selmon->sel, 0);
+		#endif
 	if (c) {
 		if (c->mon != selmon)
 			selmon = c->mon;
@@ -863,13 +907,22 @@ void
 focusmon(const Arg *arg)
 {
 	Monitor *m;
+	#if LOSEFULLSCREEN_PATCH
+	Client *sel;
+	#endif
 
 	if (!mons->next)
 		return;
 	if ((m = dirtomon(arg->i)) == selmon)
 		return;
+	#if LOSEFULLSCREEN_PATCH
+	sel = selmon->sel;
+	selmon = m;
+	unfocus(sel, 0, NULL);
+	#else
 	unfocus(selmon->sel, 0);
 	selmon = m;
+	#endif
 	focus(NULL);
 }
 
@@ -1061,10 +1114,9 @@ killclient(const Arg *arg)
 void
 manage(Window w, XWindowAttributes *wa)
 {
-	#if SWALLOW_PATCH
-	Client *c, *t = NULL, *term = NULL;
-	#else
 	Client *c, *t = NULL;
+	#if SWALLOW_PATCH
+	Client *term = NULL;
 	#endif
 	Window trans = None;
 	XWindowChanges wc;
@@ -1127,7 +1179,11 @@ manage(Window w, XWindowAttributes *wa)
 	XMoveResizeWindow(dpy, c->win, c->x + 2 * sw, c->y, c->w, c->h); /* some windows require this */
 	setclientstate(c, NormalState);
 	if (c->mon == selmon)
+		#if LOSEFULLSCREEN_PATCH
+		unfocus(selmon->sel, 0, c);
+		#else
 		unfocus(selmon->sel, 0);
+		#endif
 	c->mon->sel = c;
 	arrange(c->mon);
 	XMapWindow(dpy, c->win);
@@ -1182,13 +1238,22 @@ motionnotify(XEvent *e)
 {
 	static Monitor *mon = NULL;
 	Monitor *m;
+	#if LOSEFULLSCREEN_PATCH
+	Client *sel;
+	#endif
 	XMotionEvent *ev = &e->xmotion;
 
 	if (ev->window != root)
 		return;
 	if ((m = recttomon(ev->x_root, ev->y_root, 1, 1)) != mon && mon) {
+		#if LOSEFULLSCREEN_PATCH
+		sel = selmon->sel;
+		selmon = m;
+		unfocus(sel, 1 , NULL);
+		#else
 		unfocus(selmon->sel, 1);
 		selmon = m;
+		#endif
 		focus(NULL);
 	}
 	mon = m;
@@ -1205,8 +1270,15 @@ movemouse(const Arg *arg)
 
 	if (!(c = selmon->sel))
 		return;
+	#if !FAKEFULLSCREEN_PATCH
+	#if FAKEFULLSCREEN_CLIENT_PATCH
+	if (c->isfullscreen && c->fakefullscreen != 1) /* no support moving fullscreen windows by mouse */
+		return;
+	#else
 	if (c->isfullscreen) /* no support moving fullscreen windows by mouse */
 		return;
+	#endif // FAKEFULLSCREEN_CLIENT_PATCH
+	#endif // !FAKEFULLSCREEN_PATCH
 	restack(selmon);
 	ocx = c->x;
 	ocy = c->y;
@@ -1346,7 +1418,19 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	wc.border_width = c->bw;
 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
 	configure(c);
+	#if FAKEFULLSCREEN_CLIENT_PATCH
+	if (c->fakefullscreen == 1)
+		/* Exception: if the client was in actual fullscreen and we exit out to fake fullscreen
+		 * mode, then the focus would drift to whichever window is under the mouse cursor at the
+		 * time. To avoid this we pass True to XSync which will make the X server disregard any
+		 * other events in the queue thus cancelling the EnterNotify event that would otherwise
+		 * have changed focus. */
+		XSync(dpy, True);
+	else
+		XSync(dpy, False);
+	#else
 	XSync(dpy, False);
+	#endif // FAKEFULLSCREEN_CLIENT_PATCH
 }
 
 void
@@ -1360,8 +1444,15 @@ resizemouse(const Arg *arg)
 
 	if (!(c = selmon->sel))
 		return;
+	#if !FAKEFULLSCREEN_PATCH
+	#if FAKEFULLSCREEN_CLIENT_PATCH
+	if (c->isfullscreen && c->fakefullscreen != 1) /* no support resizing fullscreen windows by mouse */
+		return;
+	#else
 	if (c->isfullscreen) /* no support resizing fullscreen windows by mouse */
 		return;
+	#endif // FAKEFULLSCREEN_CLIENT_PATCH
+	#endif // !FAKEFULLSCREEN_PATCH
 	restack(selmon);
 	ocx = c->x;
 	ocy = c->y;
@@ -1474,7 +1565,11 @@ sendmon(Client *c, Monitor *m)
 {
 	if (c->mon == m)
 		return;
+	#if LOSEFULLSCREEN_PATCH
+	unfocus(c, 1, NULL);
+	#else
 	unfocus(c, 1);
+	#endif
 	detach(c);
 	detachstack(c);
 	c->mon = m;
@@ -1535,6 +1630,69 @@ setfocus(Client *c)
 	sendevent(c, wmatom[WMTakeFocus]);
 }
 
+#if FAKEFULLSCREEN_CLIENT_PATCH && !FAKEFULLSCREEN_PATCH
+void
+setfullscreen(Client *c, int fullscreen)
+{
+	int savestate = 0, restorestate = 0;
+
+	if ((c->fakefullscreen == 0 && fullscreen && !c->isfullscreen) // normal fullscreen
+			|| (c->fakefullscreen == 2 && fullscreen)) // fake fullscreen --> actual fullscreen
+		savestate = 1; // go actual fullscreen
+	else if ((c->fakefullscreen == 0 && !fullscreen && c->isfullscreen) // normal fullscreen exit
+			|| (c->fakefullscreen >= 2 && !fullscreen)) // fullscreen exit --> fake fullscreen
+		restorestate = 1; // go back into tiled
+
+	/* If leaving fullscreen and the window was previously fake fullscreen (2), then restore
+	 * that while staying in fullscreen. The exception to this is if we are in said state, but
+	 * the client itself disables fullscreen (3) then we let the client go out of fullscreen
+	 * while keeping fake fullscreen enabled (as otherwise there will be a mismatch between the
+	 * client and the window manager's perception of the client's fullscreen state). */
+	if (c->fakefullscreen == 2 && !fullscreen && c->isfullscreen) {
+		c->fakefullscreen = 1;
+		c->isfullscreen = 1;
+		fullscreen = 1;
+	} else if (c->fakefullscreen == 3)
+		c->fakefullscreen = 1;
+
+	if (fullscreen != c->isfullscreen) { // only send property change if necessary
+		if (fullscreen)
+			XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
+				PropModeReplace, (unsigned char*)&netatom[NetWMFullscreen], 1);
+		else
+			XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
+				PropModeReplace, (unsigned char*)0, 0);
+	}
+
+	c->isfullscreen = fullscreen;
+
+	/* Some clients, e.g. firefox, will send a client message informing the window manager
+	 * that it is going into fullscreen after receiving the above signal. This has the side
+	 * effect of this function (setfullscreen) sometimes being called twice when toggling
+	 * fullscreen on and off via the window manager as opposed to the application itself.
+	 * To protect against obscure issues where the client settings are stored or restored
+	 * when they are not supposed to we add an additional bit-lock on the old state so that
+	 * settings can only be stored and restored in that precise order. */
+	if (savestate && !(c->oldstate & (1 << 1))) {
+		c->oldbw = c->bw;
+		c->oldstate = c->isfloating | (1 << 1);
+		c->bw = 0;
+		c->isfloating = 1;
+		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
+		XRaiseWindow(dpy, c->win);
+	} else if (restorestate && (c->oldstate & (1 << 1))) {
+		c->bw = c->oldbw;
+		c->isfloating = c->oldstate = c->oldstate & 1;
+		c->x = c->oldx;
+		c->y = c->oldy;
+		c->w = c->oldw;
+		c->h = c->oldh;
+		resizeclient(c, c->x, c->y, c->w, c->h);
+		restack(c->mon);
+	} else 
+		resizeclient(c, c->x, c->y, c->w, c->h);
+}
+#else
 void
 setfullscreen(Client *c, int fullscreen)
 {
@@ -1542,26 +1700,31 @@ setfullscreen(Client *c, int fullscreen)
 		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
 			PropModeReplace, (unsigned char*)&netatom[NetWMFullscreen], 1);
 		c->isfullscreen = 1;
-		c->oldstate = c->isfloating;
+		#if !FAKEFULLSCREEN_PATCH
 		c->oldbw = c->bw;
+		c->oldstate = c->isfloating;
 		c->bw = 0;
 		c->isfloating = 1;
 		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
 		XRaiseWindow(dpy, c->win);
-	} else if (!fullscreen && c->isfullscreen){
+		#endif // !FAKEFULLSCREEN_PATCH
+	} else if (!fullscreen && c->isfullscreen) {
 		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
 			PropModeReplace, (unsigned char*)0, 0);
 		c->isfullscreen = 0;
-		c->isfloating = c->oldstate;
+		#if !FAKEFULLSCREEN_PATCH
 		c->bw = c->oldbw;
+		c->isfloating = c->oldstate;
 		c->x = c->oldx;
 		c->y = c->oldy;
 		c->w = c->oldw;
 		c->h = c->oldh;
 		resizeclient(c, c->x, c->y, c->w, c->h);
 		arrange(c->mon);
+		#endif // !FAKEFULLSCREEN_PATCH
 	}
 }
+#endif // FAKEFULLSCREEN_CLIENT_PATCH
 
 void
 setlayout(const Arg *arg)
@@ -1733,9 +1896,30 @@ tag(const Arg *arg)
 void
 tagmon(const Arg *arg)
 {
+	#if TAGMONFIXFS_PATCH
+	Client *c = selmon->sel;
+	if (!c || !mons->next)
+		return;
+	if (c->isfullscreen) {
+		c->isfullscreen = 0;
+		sendmon(c, dirtomon(arg->i));
+		c->isfullscreen = 1;
+		#if !FAKEFULLSCREEN_PATCH && FAKEFULLSCREEN_CLIENT_PATCH
+		if (c->fakefullscreen != 1) {
+			resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
+			XRaiseWindow(dpy, c->win);
+		}
+		#elif !FAKEFULLSCREEN_PATCH
+		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
+		XRaiseWindow(dpy, c->win);
+		#endif // !FAKEFULLSCREEN_PATCH
+	} else
+		sendmon(c, dirtomon(arg->i));
+	#else
 	if (!selmon->sel || !mons->next)
 		return;
 	sendmon(selmon->sel, dirtomon(arg->i));
+	#endif // TAGMONFIXFS_PATCH
 }
 
 void
@@ -1778,15 +1962,23 @@ togglebar(const Arg *arg)
 void
 togglefloating(const Arg *arg)
 {
-	if (!selmon->sel)
+	Client *c = selmon->sel;
+	if (!c)
 		return;
-	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
+	#if !FAKEFULLSCREEN_PATCH
+	#if FAKEFULLSCREEN_CLIENT_PATCH
+	if (c->isfullscreen && c->fakefullscreen != 1) /* no support for fullscreen windows */
 		return;
-	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
-	if (selmon->sel->isfloating)
-		resize(selmon->sel, selmon->sel->x, selmon->sel->y,
-			selmon->sel->w, selmon->sel->h, 0);
-	arrange(selmon);
+	#else
+	if (c->isfullscreen) /* no support for fullscreen windows */
+		return;
+	#endif // FAKEFULLSCREEN_CLIENT_PATCH
+	#endif // !FAKEFULLSCREEN_PATCH
+	c->isfloating = !c->isfloating || c->isfixed;
+	if (c->isfloating) {
+		resize(c, c->x, c->y, c->w, c->h, 0);
+	}
+	arrange(c->mon);
 }
 
 void
@@ -1817,10 +2009,23 @@ toggleview(const Arg *arg)
 }
 
 void
+#if LOSEFULLSCREEN_PATCH
+unfocus(Client *c, int setfocus, Client *nextfocus)
+#else
 unfocus(Client *c, int setfocus)
+#endif
 {
 	if (!c)
 		return;
+	#if LOSEFULLSCREEN_PATCH
+	if (c->isfullscreen && ISVISIBLE(c) && c->mon == selmon && nextfocus && !nextfocus->isfloating)
+		#if FAKEFULLSCREEN_CLIENT_PATCH
+		if (c->fakefullscreen != 1)
+			setfullscreen(c, 0);
+		#else
+		setfullscreen(c, 0);
+		#endif // FAKEFULLSCREEN_CLIENT_PATCH
+	#endif // LOSEFULLSCREEN_PATCH
 	grabbuttons(c, 0);
 	XSetWindowBorder(dpy, c->win, scheme[SchemeNorm][ColBorder].pixel);
 	if (setfocus) {

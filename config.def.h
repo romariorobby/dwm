@@ -10,13 +10,13 @@ static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 #if SWALLOW_PATCH
 static const int swallowfloating    = 0;        /* 1 means swallow floating windows by default */
-#endif
-#if UNDERLINETAGS
+#endif // SWALLOW_PATCH
+#if UNDERLINETAGS_PATCH
 static const unsigned int ulinepad			= 0;	/* horizontal padding between the underline and tag */
 static const unsigned int ulinestroke		= 2;	/* thickness / height of the underline */
 static const unsigned int ulinevoffset		= 0;	/* how far above the bottom of the bar the line should appear */
 static const int ulineall					= 1;	/* 1 to show underline on all tags, 0 for just the active ones */
-#endif
+#endif // UNDERLINETAGS_PATCH
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const char *fonts[]          = { "monospace:size=10" };
 static const char dmenufont[]       = "monospace:size=10";
