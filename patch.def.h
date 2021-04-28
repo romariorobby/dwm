@@ -20,6 +20,7 @@
 /* Sticky */
 #define STICKY_PATCH 1
 
+#define NOBORDER_PATCH 1
 /* Swallow */
 // You have to uncomment xcb from config.mk
 #define SWALLOW_PATCH 1
