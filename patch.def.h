@@ -26,6 +26,7 @@
 #define SWALLOW_PATCH 1
 
 #define UNDERLINETAGS_PATCH 1
+#define TAGSCOLORS_PATCH 1
 #define LITTLEBOXTAGS_PATCH 1
 
 // Move to another monitor while in Fullscreen mode

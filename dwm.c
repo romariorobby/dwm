@@ -70,7 +70,11 @@
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
-enum { SchemeNorm, SchemeSel }; /* color schemes */
+enum {
+	SchemeNorm, SchemeSel, SchemeOcc, SchemeUrg,
+	TagNorm, TagSel, TagOcc, TagUrg,
+	BarNorm, BarSel, BarOcc, BarUrg
+}; /* color schemes */
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMFullscreen, NetActiveWindow, NetWMWindowType,
        NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
@@ -783,7 +787,11 @@ drawbar(Monitor *m)
 	x = 0;
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
+		#if TAGSCOLORS_PATCH
+		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? TagSel : (urg & 1 << i ? TagUrg :(occ & 1 << i ? TagOcc : TagNorm))]);
+		#else
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
+		#endif
 		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
 		#if UNDERLINETAGS_PATCH
 		if (ulineall || m->tagset[m->seltags] & 1 << i) /* if there are conflicts, just move these lines directly underneath both 'drw_setscheme' and 'drw_text' :) */
