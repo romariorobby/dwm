@@ -46,6 +46,7 @@
 #include "util.h"
 
 /* macros */
+#define NUMTAGS 				9
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 #define INTERSECT(x,y,w,h,m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
@@ -65,7 +66,14 @@
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
+#if SCRATCHPADS_PATCH
+#define TOTALTAGS 				(NUMTAGS + LENGTH(scratchpads))
+#define TAGMASK 				((1 << TOTALTAGS) - 1)
+#define SPTAG(i) 				((1 << NUMTAGS) << (i))
+#define SPTAGMASK 				(((1 << LENGTH(scratchpads)) -1) << NUMTAGS)
+#else
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
+#endif
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 
 /* enums */
@@ -340,9 +348,15 @@ applyrules(Client *c)
 			#if SWALLOW_PATCH
 			c->isterminal = r->isterminal;
 			c->noswallow = r->noswallow;
-			#endif
+			#endif //SWALLOW_PATCH
 			c->isfloating = r->isfloating;
 			c->tags |= r->tags;
+			#if SCRATCHPADS_PATCH
+			if ((r->tags & SPTAGMASK) && r->isfloating) {
+				c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
+				c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
+			}
+			#endif // SCRATCHPADS_PATCH
 			for (m = mons; m && m->num != r->monitor; m = m->next);
 			if (m)
 				c->mon = m;
@@ -352,7 +366,11 @@ applyrules(Client *c)
 		XFree(ch.res_class);
 	if (ch.res_name)
 		XFree(ch.res_name);
+	#if SCRATCHPADS_PATCH
+	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : (c->mon->tagset[c->mon->seltags] & ~SPTAGMASK);
+	#else
 	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
+	#endif // SCRATCHPADS_PATCH
 }
 
 int
@@ -1881,6 +1899,12 @@ showhide(Client *c)
 	if (!c)
 		return;
 	if (ISVISIBLE(c)) {
+		#if SCRATCHPADS_PATCH
+		if ((c->tags & SPTAGMASK) && c->isfloating) {
+			c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
+			c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
+		}
+		#endif
 		/* show clients top down */
 		XMoveWindow(dpy, c->win, c->x, c->y);
 		if ((!c->mon->lt[c->mon->sellt]->arrange || c->isfloating) && !c->isfullscreen)

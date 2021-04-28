@@ -15,7 +15,7 @@ dwm is an extremely fast, small, and dynamic window manager for X.
  - [X] Fake Fullscreen
  - [X] Losefullscreen
  - [X] Tagmonfixfs
-- [ ] Scrathpads
+- [X] Scratchpads
 - [ ] Vanity Gaps
 - [ ] Pertag
 - [ ] Dwmblocks

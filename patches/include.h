@@ -13,3 +13,6 @@
 #if FAKEFULLSCREEN_CLIENT_PATCH
 #include "fakefullscreenclient.h"
 #endif
+#if SCRATCHPADS_PATCH
+#include "scratchpads.h"
+#endif

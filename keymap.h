@@ -26,6 +26,9 @@ static Key keys[] = {
 	#if !FAKEFULLSCREEN_PATCH && FAKEFULLSCREEN_CLIENT_PATCH
 	{ MODKEY|ShiftMask,             XK_f,      		togglefakefullscreen, 	{0} },
 	#endif
+	#if SCRATCHPADS_PATCH
+	{ MODKEY,             			XK_grave,       togglescratch, 			{.ui = 0 } },
+	#endif
 	{ MODKEY|ShiftMask,             XK_space,  		togglefloating, 		{0} },
 	{ MODKEY,                       XK_k,      		focusstack,     		{.i = -1 } },
 	{ MODKEY,                       XK_o,      		incnmaster,     		{.i = +1 } },
