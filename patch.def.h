@@ -25,10 +25,16 @@
 // You have to uncomment xcb from config.mk
 #define SWALLOW_PATCH 1
 
+/* 
+ * TAG
+ */
+
 #define UNDERLINETAGS_PATCH 1
 #define TAGSCOLORS_PATCH 1
 #define LITTLEBOXTAGS_PATCH 1
 
+/* Focus on active tag */
+#define FOCUSONNETACTIVE 1
 // Move to another monitor while in Fullscreen mode
 #define TAGMONFIXFS_PATCH 1
 

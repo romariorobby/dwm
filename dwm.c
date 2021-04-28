@@ -563,6 +563,9 @@ clientmessage(XEvent *e)
 {
 	XClientMessageEvent *cme = &e->xclient;
 	Client *c = wintoclient(cme->window);
+	#if FOCUSONNETACTIVE
+	unsigned int i;
+	#endif
 
 	if (!c)
 		return;
@@ -581,9 +584,19 @@ clientmessage(XEvent *e)
 			)));
 		}
 	} else if (cme->message_type == netatom[NetActiveWindow]) {
-
+	#if FOCUSONNETACTIVE
+		for (i = 0; i < LENGTH(tags) && !((1 << i) & c->tags); i++);
+		if (i < LENGTH(tags)) {
+			const Arg a = {.ui = 1 << i};
+			selmon = c->mon;
+			view(&a);
+			focus(c);
+			restack(selmon);
+		}
+	#else
 		if (c != selmon->sel && !c->isurgent)
 			seturgent(c, 1);
+	#endif
 	}
 }
 
