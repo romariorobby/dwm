@@ -16,3 +16,6 @@
 #if SCRATCHPADS_PATCH
 #include "scratchpads.c"
 #endif
+#if SYSTRAY_PATCH
+#include "systray.c"
+#endif

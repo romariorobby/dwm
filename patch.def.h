@@ -68,3 +68,6 @@
 #define FOCUSONNETACTIVE 1
 // Move to another monitor while in Fullscreen mode
 #define TAGMONFIXFS_PATCH 1
+
+/* Systray */
+#define SYSTRAY_PATCH 1
