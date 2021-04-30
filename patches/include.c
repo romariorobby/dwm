@@ -22,3 +22,6 @@
 #if TAGICONS_PATCH
 #include "tagicons.c"
 #endif
+#if DWMBLOCKS_PATCH
+#include "dwmblocks.c"
+#endif

@@ -102,7 +102,11 @@ updatesystray(void)
 	Client *i;
 	Monitor *m = systraytomon(NULL);
 	unsigned int x = m->mx + m->mw;
+    #if DWMBLOCKS_PATCH
+	unsigned int sw = TEXTW(stextc) - lrpad + systrayspacing;
+    #else
 	unsigned int sw = TEXTW(stext) - lrpad + systrayspacing;
+    #endif
 	unsigned int w = 1;
 
 	if (!showsystray)

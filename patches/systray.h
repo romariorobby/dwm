@@ -31,4 +31,3 @@ static void updatesystrayiconstate(Client *i, XPropertyEvent *ev);
 static Client *wintosystrayicon(Window w);
 static void togglesystray();
 static Systray *systray =  NULL;
-

@@ -71,3 +71,5 @@
 #define SYSTRAY_PATCH 1
 
 #define TAGICONS_PATCH 1
+
+#define DWMBLOCKS_PATCH 1

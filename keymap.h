@@ -90,5 +90,15 @@ static Button buttons[] = {
 	{ ClkTagBar,            0,              Button4,        cycleiconset,   {.i = +1 } },
 	{ ClkTagBar,            0,              Button5,        cycleiconset,   {.i = -1 } },
 	#endif
+	#if DWMBLOCKS_PATCH
+	{ ClkStatusText,        0,                  Button1,        sigdwmblocks,   {.i = 1} },
+	{ ClkStatusText,        0,                  Button2,        sigdwmblocks,   {.i = 2} },
+	{ ClkStatusText,        0,                  Button3,        sigdwmblocks,   {.i = 3} },
+	{ ClkStatusText,        0,                  Button4,        sigdwmblocks,   {.i = 4} },
+	{ ClkStatusText,        0,                  Button5,        sigdwmblocks,   {.i = 5} },
+	{ ClkStatusText,        ShiftMask,          Button1,        sigdwmblocks,   {.i = 6} },
+	{ ClkStatusText,        ShiftMask,          Button2,        sigdwmblocks,   {.i = 7} },
+	{ ClkStatusText,        ShiftMask,          Button3,        sigdwmblocks,   {.i = 8} },
+	#endif // DWMBLOCKS_PATCH
 };
 

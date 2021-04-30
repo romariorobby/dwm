@@ -79,9 +79,16 @@
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
 
 /* enums */
-enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
+enum {
+    #if DWMBLOCKS_PATCH
+    CurNormal, CurHand, CurResize, CurMove, CurLast
+    #else
+    CurNormal, CurResize, CurMove, CurLast
+    #endif
+}; /* cursor */
 enum {
 	SchemeNorm, SchemeSel, SchemeOcc, SchemeUrg,
+    FgRed, FgGreen, FgBlue, FgYellow, FgOrange, FgPurple, FgAqua, FgTeal,
 	TagNorm, TagSel, TagOcc, TagUrg,
 	BarNorm, BarSel, BarOcc, BarUrg
 }; /* color schemes */
@@ -170,6 +177,9 @@ struct Monitor {
 	unsigned int tagset[2];
 	int showbar;
 	int topbar;
+	#if DWMBLOCKS_PATCH
+    int statushandcursor;
+    #endif
 	#if TAGICONS_PATCH
 	int iconset;
 	#endif
@@ -300,10 +310,16 @@ static void zoom(const Arg *arg);
 
 /* variables */
 static const char broken[] = "broken";
+#if DWMBLOCKS_PATCH
+static int bh, blw, ble;      /* bar geometry */
+static int wsbar;            /* width of selmon bar */
+static int wstext;           /* width of status text */
+#else
+static int bh, blw = 0;      /* bar geometry */
 static char stext[256];
+#endif
 static int screen;
 static int sw, sh;           /* X display screen geometry width, height */
-static int bh, blw = 0;      /* bar geometry */
 static int lrpad;            /* sum of left and right padding for text */
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int numlockmask = 0;
@@ -505,7 +521,12 @@ attachstack(Client *c)
 void
 buttonpress(XEvent *e)
 {
+    #if DWMBLOCKS_PATCH
+    int i, x;
+    unsigned int click;
+    #else
 	unsigned int i, x, click;
+    #endif
 	#if TAGICONS_PATCH
 	unsigned int tw;
 	#endif
@@ -514,11 +535,12 @@ buttonpress(XEvent *e)
 	Monitor *m;
 	XButtonPressedEvent *ev = &e->xbutton;
 
+    #if !DWMBLOCKS_PATCH
 	click = ClkRootWin;
+    #endif
 	/* focus monitor if necessary */
 	if ((m = wintomon(ev->window)) && m != selmon) {
 		#if LOSEFULLSCREEN_PATCH
-		// TODO:FIX THIS
 		unfocus(selmon->sel, 1, NULL);
 		#else
 		unfocus(selmon->sel, 1);
@@ -527,6 +549,44 @@ buttonpress(XEvent *e)
 		focus(NULL);
 	}
 	if (ev->window == selmon->barwin) {
+        #if DWMBLOCKS_PATCH
+        #if TAGICONS_PATCH
+		i = x = 0;
+		do {
+			tw = TEXTW(tagicon(selmon, i));
+			if (tw <= lrpad)
+				continue;
+			x += tw;
+		} while (ev->x >= x && ++i < NUMTAGS);
+		if (i < NUMTAGS) {
+            click = ClkTagBar;
+            arg.ui = 1 << i;
+        #endif // TAGICONS_PATCH
+        } else if (ev->x < ble - blw) {
+                i = -1, x = -ev->x;
+                do
+                        x += TEXTW(tags[++i]);
+                while (x <= 0);
+                click = ClkTagBar;
+                arg.ui = 1 << i;
+        } else if (ev->x < ble)
+                click = ClkLtSymbol;
+		#if SYSTRAY_PATCH
+        else if (ev->x < wsbar - wstext)
+		#else // SYSTRAY_PATCH
+        else if (ev->x < selmon->ww - wstext)
+		#endif
+                click = ClkWinTitle;
+		#if SYSTRAY_PATCH
+        else if ((x = wsbar - RSPAD - ev->x) > 0 && (x -= wstext - LSPAD - RSPAD) <= 0) {
+		#else
+        else if ((x = selmon->ww - RSPAD - ev->x) > 0 && (x -= wstext - LSPAD - RSPAD) <= 0) {
+		#endif // SYSTRAY_PATCH
+                updatedwmblockssig(x);
+                click = ClkStatusText;
+        } else
+                        return;
+        #else
 		i = x = 0;
 		#if TAGICONS_PATCH
 		do {
@@ -541,7 +601,7 @@ buttonpress(XEvent *e)
 			x += TEXTW(tags[i]);
 		while (ev->x >= x && ++i < LENGTH(tags));
 		if (i < LENGTH(tags)) {
-		#endif
+		#endif // TAGICONS_PATCH
 			click = ClkTagBar;
 			arg.ui = 1 << i;
 		} else if (ev->x < x + blw)
@@ -550,16 +610,22 @@ buttonpress(XEvent *e)
 		else if (ev->x > selmon->ww - (int)TEXTW(stext) - getsystraywidth())
 		#else
 		else if (ev->x > selmon->ww - (int)TEXTW(stext))
-		#endif
+		#endif // SYSTRAY_PATCH
 			click = ClkStatusText;
 		else
 			click = ClkWinTitle;
+        #endif // DWMBLOCKS_PATCH
 	} else if ((c = wintoclient(ev->window))) {
 		focus(c);
 		restack(selmon);
 		XAllowEvents(dpy, ReplayPointer, CurrentTime);
 		click = ClkClientWin;
-	}
+    #if DWMBLOCKS_PATCH
+	} else
+                click = ClkRootWin;
+    #else
+    }
+    #endif // DWMBLOCKS_PATCH
 	for (i = 0; i < LENGTH(buttons); i++)
 		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
 		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state))
@@ -912,9 +978,12 @@ void
 drawbar(Monitor *m)
 {
 	int x, w, tw = 0;
-	#if SYSTRAY_PATCH
+	#if SYSTRAY_PATCH && !DWMBLOCKS_PATCH
 	int stw = 0;
 	#endif // SYSTRAY_PATCH
+    #if DWMBLOCKS_PATCH
+    int wbar = m->ww;
+    #endif
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
@@ -923,12 +992,59 @@ drawbar(Monitor *m)
 	#endif
 	Client *c;
 
-	#if SYSTRAY_PATCH
-	if(showsystray && m == systraytomon(m) && !systrayonleft)
-		stw = getsystraywidth();
-	#endif //SYSTRAY_PATCH
-
+	#if DWMBLOCKS_PATCH && SYSTRAY_PATCH
+    if (showsystray && m == systraytomon(m))
+            wbar -= getsystraywidth();
+	#elif SYSTRAY_PATCH && !DWMBLOCKS_PATCH
+	if (showsystray && m == systraytomon(m) && !systrayonleft)
+            stw = getsystraywidth();
+    #else
+        // Blank
+    #endif // DWMBLOCKS_PATCH && SYSTRAY_PATCH
 	/* draw status first so it can be overdrawn by tags later */
+    #if DWMBLOCKS_PATCH
+	if (m == selmon) { /* status is only drawn on selected monitor */
+				//
+                char *stc = stextc;
+                char *stp = stextc;
+                char tmp;
+				//
+
+                wsbar = wbar;
+                drw_setscheme(drw, scheme[SchemeNorm]);
+                #if SYSTRAY_PATCH
+                x = wbar - wstext;
+                #else
+                x = m->ww - wstext;
+                #endif
+                drw_rect(drw, x, 0, LSPAD, bh, 1, 1); x += LSPAD; /* to keep left padding clean */
+                // STATUSCOLOR
+                for (;;) {
+                        if ((unsigned char)*stc >= ' ') {
+                                stc++;
+                                continue;
+                        }
+                        tmp = *stc;
+                        if (stp != stc) {
+                                *stc = '\0';
+                                x = drw_text(drw, x, 0, TTEXTW(stp), bh, 0, stp, 0);
+                        }
+                        if (tmp == '\0')
+                                break;
+                        if (tmp - DELIMITERENDCHAR - 1 < LENGTH(colors))
+                                drw_setscheme(drw, scheme[tmp - DELIMITERENDCHAR - 1]);
+                        *stc = tmp;
+                        stp = ++stc;
+                }
+                //
+                drw_setscheme(drw, scheme[SchemeNorm]);
+                #if SYSTRAY_PATCH
+                drw_rect(drw, x, 0, wbar - x, bh, 1, 1); /* to keep right padding clean */
+                #else
+                drw_rect(drw, x, 0, m->ww - x, bh, 1, 1); /* to keep right padding clean */
+                #endif // !SYSTRAY_PATCH
+	    }
+    #else
 	if (m == selmon) { /* status is only drawn on selected monitor */
 		drw_setscheme(drw, scheme[SchemeNorm]);
 		tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
@@ -936,10 +1052,10 @@ drawbar(Monitor *m)
 		drw_text(drw, m->ww - tw - stw, 0, tw, bh, lrpad / 2 - 2, stext, 0);
 		#else
 		drw_text(drw, m->ww - tw, 0, tw, bh, 0, stext, 0);
-		#endif
-	}
-
-	#if SYSTRAY_PATCH
+		#endif // SYSTRAY_PATCH
+    }
+    #endif // DWMBLOCKS_PATCH
+	#if SYSTRAY_PATCH && !DWMBLOCKS_PATCH
 	resizebarwin(m);
 	#endif
 	for (c = m->clients; c; c = c->next) {
@@ -957,7 +1073,7 @@ drawbar(Monitor *m)
 	#else
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
-	#endif
+	#endif //TAGICONS_PATCH
 		#if TAGSCOLORS_PATCH
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? TagSel : (urg & 1 << i ? TagUrg :(occ & 1 << i ? TagOcc : TagNorm))]);
 		#else
@@ -981,15 +1097,37 @@ drawbar(Monitor *m)
 		#endif // LITTERBOXTAGS_PATCH
 		x += w;
 	}
+    #if DWMBLOCKS_PATCH
+	w = TEXTW(m->ltsymbol);
+    #else
 	w = blw = TEXTW(m->ltsymbol);
+    #endif
 	drw_setscheme(drw, scheme[SchemeNorm]);
 	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
 
-	#if SYSTRAY_PATCH
+	#if SYSTRAY_PATCH && !DWMBLOCKS_PATCH
 	if ((w = m->ww - tw - stw - x) > bh) {
-	#else
+    /* #elif !SYSTRAY_PATCH */
+    #else
 	if ((w = m->ww - tw - x) > bh) {
-	#endif
+    #endif
+    #if DWMBLOCKS_PATCH
+        if (m == selmon) {
+                blw = w, ble = x;
+				#if SYSTRAY_PATCH
+                w = wbar - wstext - x;
+				#else
+                w = m->ww - wstext - x;
+				#endif
+        } else
+				#if SYSTRAY_PATCH
+                w = wbar - x;
+				#else
+                w = m->ww - x;
+				#endif
+    }
+	if (w > bh) {
+    #endif // DWMBLOCKS_PATCH
 		if (m->sel) {
 			drw_setscheme(drw, scheme[m == selmon ? SchemeSel : SchemeNorm]);
 			drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
@@ -1000,8 +1138,11 @@ drawbar(Monitor *m)
 			drw_rect(drw, x, 0, w, bh, 1, 1);
 		}
 	}
-	#if SYSTRAY_PATCH
+	#if SYSTRAY_PATCH && !DWMBLOCKS_PATCH
 	drw_map(drw, m->barwin, 0, 0, m->ww - stw, bh);
+    #elif DWMBLOCKS_PATCH
+    XMoveResizeWindow(dpy, m->barwin, m->wx, m->by, wbar, bh);
+	drw_map(drw, m->barwin, 0, 0, wbar, bh);
 	#else
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 	#endif
@@ -1463,12 +1604,40 @@ void
 motionnotify(XEvent *e)
 {
 	static Monitor *mon = NULL;
+    #if DWMBLOCKS_PATCH
+    int x;
+    #endif
 	Monitor *m;
 	#if LOSEFULLSCREEN_PATCH
 	Client *sel;
 	#endif
 	XMotionEvent *ev = &e->xmotion;
-
+    #if DWMBLOCKS_PATCH
+        if (ev->window == root) {
+                if ((m = recttomon(ev->x_root, ev->y_root, 1, 1)) != mon && mon) {
+                    #if LOSEFULLSCREEN_PATCH
+                    sel = selmon->sel;
+                    selmon = m;
+                    unfocus(sel, 1 , NULL);
+                    #else
+                    unfocus(selmon->sel, 1);
+                    selmon = m;
+                    #endif
+                    focus(NULL);
+                }
+                mon = m;
+		#if SYSTRAY_PATCH
+        } else if (ev->window == selmon->barwin && (x = wsbar - RSPAD - ev->x) > 0
+		#else
+        } else if (ev->window == selmon->barwin && (x = selmon->ww - RSPAD - ev->x) > 0
+		#endif
+                                                && (x -= wstext - LSPAD - RSPAD) <= 0)
+                updatedwmblockssig(x);
+        else if (selmon->statushandcursor) {
+                selmon->statushandcursor = 0;
+                XDefineCursor(dpy, selmon->barwin, cursor[CurNormal]->cursor);
+        }
+    #else
 	if (ev->window != root)
 		return;
 	if ((m = recttomon(ev->x_root, ev->y_root, 1, 1)) != mon && mon) {
@@ -1483,6 +1652,7 @@ motionnotify(XEvent *e)
 		focus(NULL);
 	}
 	mon = m;
+    #endif // DWMBLOCKS_PATCH
 }
 
 void
@@ -2094,6 +2264,9 @@ setup(void)
 	netatom[NetClientList] = XInternAtom(dpy, "_NET_CLIENT_LIST", False);
 	/* init cursors */
 	cursor[CurNormal] = drw_cur_create(drw, XC_left_ptr);
+    #if DWMBLOCKS_PATCH
+    cursor[CurHand] = drw_cur_create(drw, XC_hand2);
+    #endif
 	cursor[CurResize] = drw_cur_create(drw, XC_sizing);
 	cursor[CurMove] = drw_cur_create(drw, XC_fleur);
 	/* init appearance */
@@ -2441,7 +2614,11 @@ updatebars(void)
 	XSetWindowAttributes wa = {
 		.override_redirect = True,
 		.background_pixmap = ParentRelative,
+        #if DWMBLOCKS_PATCH
+		.event_mask = ButtonPressMask|ExposureMask|PointerMotionMask
+        #else
 		.event_mask = ButtonPressMask|ExposureMask
+        #endif // DWMBLOCKS_PATCH
 	};
 	XClassHint ch = {"dwm", "dwm"};
 	for (m = mons; m; m = m->next) {
@@ -2638,12 +2815,44 @@ updatesizehints(Client *c)
 void
 updatestatus(void)
 {
+	#if DWMBLOCKS_PATCH
+	char rawstext[STATUSLENGTH];
+
+	if (gettextprop(root, XA_WM_NAME, rawstext, sizeof rawstext)) {
+                char stextp[STATUSLENGTH];
+                char *stp = stextp, *stc = stextc, *sts = stexts;
+
+                for (char *rst = rawstext; *rst != '\0'; rst++)
+                        if ((unsigned char)*rst >= ' ')
+                                *(stp++) = *(stc++) = *(sts++) = *rst;
+                        else if ((unsigned char)*rst > DELIMITERENDCHAR)
+                                *(stc++) = *rst;
+                        else
+                                *(sts++) = *rst;
+                *stp = *stc = *sts = '\0';
+				#if SYSTRAY_PATCH
+                wstext = TEXTW(stextp) + LSPAD + RSPAD;
+				#else
+                wstext = TTEXTW(stextp) + LSPAD + RSPAD;
+				#endif
+        } else {
+                strcpy(stextc, "dwm-"VERSION);
+                strcpy(stexts, stextc);
+				#if SYSTRAY_PATCH
+                wstext = TEXTW(stextc) + LSPAD + RSPAD;
+				#else
+                wstext = TTEXTW(stextc) + LSPAD + RSPAD;
+				#endif
+        }
+        drawbar(selmon);
+	#else
 	if (!gettextprop(root, XA_WM_NAME, stext, sizeof(stext)))
 		strcpy(stext, "dwm-"VERSION);
 	drawbar(selmon);
-	#if SYSTRAY_PATCH
+	#if SYSTRAY_PATCH && !DWMBLOCKS_PATCH
 	updatesystray();
-	#endif
+	#endif // SYSTRAY_PATCH
+	#endif // DWMBLOCKS_PATCH
 }
 
 void

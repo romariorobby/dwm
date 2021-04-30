@@ -65,8 +65,8 @@ static const Rule rules[] = {
 	{ TERMC1,  	  	  NULL,       NULL,            0,       	 0,          1,			 0,			  -1 },
 	{ "Vieb",  	  	  NULL,       NULL,            1 << 4,       0,          0,			 0,			  -1 },
 	#if SCRATCHPADS_PATCH
-	{ NULL,		  	  "sptm",      NULL,		   SPTAG(0),	 1,			 1,      	 1,       	  -1 },
-	{ NULL,		  	  "spterm",	  NULL,		  	   SPTAG(1),	 1,			 0,          1,       	  -1 },
+	{ NULL,		  	  "sptm",      NULL,		   SPTAG(0),	 1,			 1,      	 0,       	  -1 },
+	{ NULL,		  	  "spterm",	  NULL,		  	   SPTAG(1),	 1,			 1,          0,       	  -1 },
 	#endif
 	{ NULL,  	  	  NULL,       "Event Tester",  0,       	 0,          0,			 1,			  -1 },  /* xev */
 
