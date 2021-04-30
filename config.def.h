@@ -29,16 +29,18 @@ static const char *fonts[]          = { "monospace:size=10" };
 static const char dmenufont[]       = "monospace:size=10";
 
 #include "theme.h"
+#if SCRATCHPADS_PATCH
+const char *spcmd1[] = {TERM, "-n", "sptm", "-g", "144x41", "-e", "tmuc", NULL };
+const char *spcmd2[] = {TERM, "-n", "spterm", "-g", "120x34", NULL };
+static Sp scratchpads[] = {
+	/* Name        cmd */
+	{"sptm",     spcmd1},
+	{"spterm",   spcmd2},
+};
+#endif
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
-#if SCRATCHPADS_PATCH
-const char *spcmd1[] = {"st", "-n", "spterm", "-g", "120x34", "-e", "tmuc", NULL };
-static Sp scratchpads[] = {
-	/* Name        cmd */
-	{"spterm",     spcmd1}
-};
-#endif
 /* xprop(1):
  *	WM_CLASS(STRING) = instance, class
  *	WM_NAME(STRING) = title
@@ -52,7 +54,8 @@ static const Rule rules[] = {
 	{ TERMC1,  	  	  NULL,       NULL,            0,       	 0,          1,			 0,			  -1 },
 	{ "Vieb",  	  	  NULL,       NULL,            1 << 4,       0,          0,			 0,			  -1 },
 	#if SCRATCHPADS_PATCH
-	{ NULL,		  	  "spterm",	  NULL,		  	   SPTAG(0),	 1,			 1,          0,           -1 },
+	{ NULL,		  	  "sptm",      NULL,		   SPTAG(0),	 1,			 1,      	 1,       	  -1 },
+	{ NULL,		  	  "spterm",	  NULL,		  	   SPTAG(1),	 1,			 0,          1,       	  -1 },
 	#endif
 	{ NULL,  	  	  NULL,       "Event Tester",  0,       	 0,          0,			 1,			  -1 },  /* xev */
 
@@ -62,7 +65,8 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	#if SCRATCHPADS_PATCH
-	{ NULL,		  "spterm",	  NULL,		  SPTAG(0),	    1,			 -1 },
+	{ NULL,		  "sptm",     NULL,		  SPTAG(0),	    1,			 -1 },
+	{ NULL,		  "spterm",	  NULL,		  SPTAG(1),	    1,			 -1 },
 	#endif
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 };

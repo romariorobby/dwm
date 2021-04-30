@@ -30,7 +30,9 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_f,      		togglefakefullscreen, 	{0} },
 	#endif
 	#if SCRATCHPADS_PATCH
-	{ MODKEY,             			XK_grave,       togglescratch, 			{.ui = 0 } },
+	{ MODKEY,             			XK_grave,   	togglescratch, 			{.ui = 0 } },
+	{ MODKEY,             			XK_slash,  		togglescratch, 			{.ui = 1 } },
+	{ MODKEY|ShiftMask,             XK_slash, 		togglescratch, 			{.ui = 2 } },
 	#endif
 	{ MODKEY|ShiftMask,             XK_space,  		togglefloating, 		{0} },
 	{ MODKEY,                       XK_k,      		focusstack,     		{.i = -1 } },
