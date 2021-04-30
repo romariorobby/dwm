@@ -34,6 +34,12 @@ static Key keys[] = {
 	{ MODKEY,             			XK_slash,  		togglescratch, 			{.ui = 1 } },
 	{ MODKEY|ShiftMask,             XK_slash, 		togglescratch, 			{.ui = 2 } },
 	#endif
+	#if TAGICONS_PATCH
+	{ MODKEY|ControlMask|ShiftMask, XK_a,      		seticonset,     		{.i = 0 } },
+	{ MODKEY|ControlMask,           XK_a,      		seticonset,     		{.i = 1 } },
+	{ MODKEY,                       XK_a,      		cycleiconset,     		{.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_a,      		cycleiconset,     		{.i = -1 } },
+	#endif
 	{ MODKEY|ShiftMask,             XK_space,  		togglefloating, 		{0} },
 	{ MODKEY,                       XK_k,      		focusstack,     		{.i = -1 } },
 	{ MODKEY,                       XK_o,      		incnmaster,     		{.i = +1 } },
@@ -80,5 +86,9 @@ static Button buttons[] = {
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
+	#if TAGICONS_PATCH
+	{ ClkTagBar,            0,              Button4,        cycleiconset,   {.i = +1 } },
+	{ ClkTagBar,            0,              Button5,        cycleiconset,   {.i = -1 } },
+	#endif
 };
 

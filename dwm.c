@@ -71,6 +71,8 @@
 #define TAGMASK 				((1 << TOTALTAGS) - 1)
 #define SPTAG(i) 				((1 << NUMTAGS) << (i))
 #define SPTAGMASK 				(((1 << LENGTH(scratchpads)) -1) << NUMTAGS)
+#elif TAGICONS_PATCH
+#define TAGMASK                 ((1 << NUMTAGS) - 1)
 #else
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #endif
@@ -168,6 +170,9 @@ struct Monitor {
 	unsigned int tagset[2];
 	int showbar;
 	int topbar;
+	#if TAGICONS_PATCH
+	int iconset;
+	#endif
 	Client *clients;
 	Client *sel;
 	Client *stack;
@@ -339,8 +344,11 @@ static Window root, wmcheckwin;
 
 #include "patches/include.c"
 /* compile-time check if all tags fit into an unsigned int bit array. */
+#if TAGICONS_PATCH
+struct NumTags { char limitexceeded[NUMTAGS > 31 ? -1 : 1]; };
+#else
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
-
+#endif
 /* function implementations */
 void
 applyrules(Client *c)
@@ -498,6 +506,9 @@ void
 buttonpress(XEvent *e)
 {
 	unsigned int i, x, click;
+	#if TAGICONS_PATCH
+	unsigned int tw;
+	#endif
 	Arg arg = {0};
 	Client *c;
 	Monitor *m;
@@ -517,10 +528,20 @@ buttonpress(XEvent *e)
 	}
 	if (ev->window == selmon->barwin) {
 		i = x = 0;
+		#if TAGICONS_PATCH
+		do {
+			tw = TEXTW(tagicon(selmon, i));
+			if (tw <= lrpad)
+				continue;
+			x += tw;
+		} while (ev->x >= x && ++i < NUMTAGS);
+		if (i < NUMTAGS) {
+		#else
 		do
 			x += TEXTW(tags[i]);
 		while (ev->x >= x && ++i < LENGTH(tags));
 		if (i < LENGTH(tags)) {
+		#endif
 			click = ClkTagBar;
 			arg.ui = 1 << i;
 		} else if (ev->x < x + blw)
@@ -897,6 +918,9 @@ drawbar(Monitor *m)
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
+	#if TAGICONS_PATCH
+	char *icon;
+	#endif
 	Client *c;
 
 	#if SYSTRAY_PATCH
@@ -924,14 +948,26 @@ drawbar(Monitor *m)
 			urg |= c->tags;
 	}
 	x = 0;
+	#if TAGICONS_PATCH
+	for (i = 0; i < NUMTAGS; i++) {
+		icon = tagicon(m, i);
+		w = TEXTW(icon);
+		if (w <= lrpad)
+			continue;
+	#else
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
+	#endif
 		#if TAGSCOLORS_PATCH
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? TagSel : (urg & 1 << i ? TagUrg :(occ & 1 << i ? TagOcc : TagNorm))]);
 		#else
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
 		#endif
+		#if TAGICONS_PATCH
+		drw_text(drw, x, 0, w, bh, lrpad / 2, icon, urg & 1 << i);
+		#else
 		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
+		#endif
 		#if UNDERLINETAGS_PATCH
 		if (ulineall || m->tagset[m->seltags] & 1 << i) /* if there are conflicts, just move these lines directly underneath both 'drw_setscheme' and 'drw_text' :) */
 			drw_rect(drw, x + ulinepad, bh - ulinestroke - ulinevoffset, w - (ulinepad * 2), ulinestroke, 1, 0);

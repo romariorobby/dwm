@@ -4,9 +4,7 @@
 /*
  * THEMES
  * */
-
-// Default
-#define DEFAULT 0
+// if none selected fallback to default
 // GRUVBOX 
 #define GRUVBOX_DARK 1
 #define GRUVBOX_MEDIUM 0
@@ -71,3 +69,5 @@
 
 /* Systray */
 #define SYSTRAY_PATCH 1
+
+#define TAGICONS_PATCH 1

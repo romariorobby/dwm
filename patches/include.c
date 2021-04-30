@@ -19,3 +19,6 @@
 #if SYSTRAY_PATCH
 #include "systray.c"
 #endif
+#if TAGICONS_PATCH
+#include "tagicons.c"
+#endif

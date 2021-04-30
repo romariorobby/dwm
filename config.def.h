@@ -38,8 +38,19 @@ static Sp scratchpads[] = {
 	{"spterm",   spcmd2},
 };
 #endif
+#if TAGICONS_PATCH
+/* tagging: refer to https://github.com/bakkeby/patches/wiki/tagicons */
+static const char *tags[NUMTAGS] = { NULL };  /* left for compatibility reasons, i.e. code that checks LENGTH(tags) */
+static char *tagicons[][NUMTAGS] = {
+	[IconsDefault]        = {"•"},
+	[IconsVacant]         = { NULL },
+	[IconsText]           = { "term", "mario", "web", "chat", "", "", "", "", "" },
+	[IconsOccupied]       = { "", "", "", "", "<5>", "<6>", "<7>", "<8>", "<9>" },
+};
+#else
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+#endif
 
 /* xprop(1):
  *	WM_CLASS(STRING) = instance, class
