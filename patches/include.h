@@ -25,3 +25,6 @@
 #if DWMBLOCKS_PATCH
 #include "dwmblocks.h"
 #endif
+#if DWMC_PATCH
+#include "dwmc.h"
+#endif

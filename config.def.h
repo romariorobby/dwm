@@ -167,3 +167,49 @@ static Button buttons[] = {
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };
 #endif
+
+#if DWMC_PATCH
+/* signal definitions */
+/* signum must be greater than 0 */
+/* trigger signals using `xsetroot -name "fsignal:<signame> [<type> <value>]"` */
+static Signal signals[] = {
+	/* signum               function */
+	{ "focusstack",           focusstack },
+	{ "setmfact",             setmfact },
+	{ "togglebar",            togglebar },
+	{ "incnmaster",           incnmaster },
+	{ "togglefloating",       togglefloating },
+	{ "focusmon",             focusmon },
+	{ "tagmon",               tagmon },
+	{ "zoom",                 zoom },
+	{ "view",                 view },
+	{ "viewall",              viewall },
+	{ "viewex",               viewex },
+	{ "toggleview",           view },
+	{ "toggleviewex",         toggleviewex },
+	#if STICKY_PATCH
+	{ "togglesticky",         togglesticky },
+	#endif // STICKY_PATCH
+	#if TOGGLEFULLSCREEN_PATCH
+	{ "togglefullscreen",     togglefullscreen },
+	#endif // TOGGLEFULLSCREEN_PATCH
+	#if !FAKEFULLSCREEN_PATCH && FAKEFULLSCREEN_CLIENT_PATCH
+	{ "togglefakefullscreen", togglefakefullscreen },
+	#endif // FAKEFULLSCREEN_CLIENT_PATCH
+	#if SYSTRAY_PATCH
+	{ "togglesystray",        togglesystray },
+	#endif // TOGGLEFULLSCREEN_PATCH
+	#if SCRATCHPADS_PATCH
+	{ "togglescratch",        togglescratch },
+	#endif // SCRATCHPADS_PATCH
+	{ "tag",                  tag },
+	{ "tagall",               tagall },
+	{ "tagex",                tagex },
+	{ "toggletag",            tag },
+	{ "toggletagex",          toggletagex },
+	{ "killclient",           killclient },
+	{ "quit",                 quit },
+	{ "setlayout",            setlayout },
+	{ "setlayoutex",          setlayoutex },
+};
+#endif

@@ -73,3 +73,13 @@
 #define TAGICONS_PATCH 1
 
 #define DWMBLOCKS_PATCH 1
+
+/*
+ * MISC
+ */
+
+/* DWMC
+ * uncomment the following line in Makefile:
+ *    #cp -f patch/dwmc ${DESTDIR}${PREFIX}/bin
+ */
+#define DWMC_PATCH 1
