@@ -9,3 +9,10 @@ config.h
 todo
 
 dwm-msg
+back/config.h.bak
+dwm.c.bak
+patches/indicator.c
+patches/indicator.h
+patches/layout_tile_def.c
+temp
+temp.c
