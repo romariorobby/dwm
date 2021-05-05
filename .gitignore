@@ -7,3 +7,5 @@ drw.o
 patch.h
 config.h
 todo
+
+dwm-msg

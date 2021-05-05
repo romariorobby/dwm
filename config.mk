@@ -23,11 +23,16 @@ FREETYPEINC = /usr/include/freetype2
 # Uncommnect this for swallow_patch
 # KVMLIB = -lkvm
 
+# Uncomment for the ipc patch / IPC_PATCH
+# YAJL
+# YAJLLIBS = -lyajl
+# YAJLINC = -I/usr/include/yajl
+
 # includes and libs
 # Uncommnect this for swallow_patch
 XCBLIBS = -lX11-xcb -lxcb -lxcb-res
-INCS = -I${X11INC} -I${FREETYPEINC}
-LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS} ${FREETYPELIBS} ${XCBLIBS} ${KVMLIB}
+INCS = -I${X11INC} -I${FREETYPEINC} ${YAJLINC}
+LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS} ${FREETYPELIBS} ${XCBLIBS} ${KVMLIB} ${YAJLLIBS}
 
 # flags
 CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_POSIX_C_SOURCE=200809L -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}

@@ -20,9 +20,30 @@ dwm is an extremely fast, small, and dynamic window manager for X.
 - [X] [[https://github.com/bakkeby/patches/wiki/tagicons][Tagicons]]
 - [X] [[https://github.com/ashish-yadav11/dwmblocks][Dwmblocks]](+statuscolor +hinting +signalling)
 - [X] [[https://dwm.suckless.org/patches/dwmc/][dwmc]]
-- [ ] Vanity Gaps
-- [ ] Pertag
-
-  |-----+---+---+---+---|
-  | [ ] | x | y |   |   |
-  | [X] | y | x |   |   |
+- [X] monoclecount
+- [X] Vanity Gaps (+layouts)
+ - [X] Bstack and Bstackhoriz
+ - [X] Fibonacci (Spiral & Dwindle)
+ - [X] Gapless Grid
+ - [X] Nrowgrid
+ - [X] Deck
+ - [X] Centered Floating Master
+ - [X] Centered Master
+ - [X] Horizontal Grid
+ - [ ] Column
+ - [ ] Tatami
+- [X] Dragmfact
+- [X] Dragcfact & Cfact
+- [X] Pertag
+- [X] Xmenu
+- [X] Flextile Deluxe
+- [X] hide vacant tags
+- [ ] IPC
+- [ ] DWMC
+- [ ] Xrdb
+- [ ] Window Roles
+** MAYBE
+- [ ] Multi Monitor Support?
+- [ ] Monitor Rules #B
+- [ ] Holdbar
+- [ ] Steam

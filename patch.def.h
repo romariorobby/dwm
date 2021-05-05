@@ -61,7 +61,10 @@
 #define UNDERLINETAGS_PATCH 1
 #define TAGSCOLORS_PATCH 1
 #define LITTLEBOXTAGS_PATCH 1
+#define HIDEVACANTTAGS_PATCH 1
 
+#define SHIFTVIEW_PATCH 0
+#define SHIFTVIEW_CLIENTS_PATCH 1
 /* Focus on active tag */
 #define FOCUSONNETACTIVE 1
 // Move to another monitor while in Fullscreen mode
@@ -74,6 +77,38 @@
 
 #define DWMBLOCKS_PATCH 1
 
+#define PERTAG_PATCH 1
+#define PERTAGBAR_PATCH 1
+#define PERTAG_VANITYGAPS_PATCH 1
+
+/*
+ * LAYOUT
+ */
+#define FLEXTILE_DELUXE_LAYOUT 0
+
+#define CFACTS_PATCH 1
+#define CYCLELAYOUT_PATCH 1
+#define CENTEREDMASTER_LAYOUT
+#define CENTEREDFLOATINGMASTER_LAYOUT
+#define BSTACKHORIZ_LAYOUT 1
+#define BSTACK_LAYOUT 1
+#define FIBONACCI_DWINDLE_LAYOUT 1
+#define FIBONACCI_SPIRAL_LAYOUT 1
+#define TILE_LAYOUT 1
+#define MONOCLE_LAYOUT 1
+#define MONOCLECOUNT_PATCH 1
+#define NROWGRID_LAYOUT 1
+
+#define DRAGMFACT_PATCH 1
+#define DRAGCFACT_PATCH 1
+#define PLACEMOUSE_PATCH 1
+
+/* Layoutmenu (XMENU)
+ * uncomment the following line in Makefile:
+ *    #cp -f patch/layoutmenu.sh ${DESTDIR}${PREFIX}/bin
+ */
+#define LAYOUTMENU_PATCH 0
+
 /*
  * MISC
  */
@@ -83,3 +118,5 @@
  *    #cp -f patch/dwmc ${DESTDIR}${PREFIX}/bin
  */
 #define DWMC_PATCH 1
+#define IPC_PATCH 0 
+
