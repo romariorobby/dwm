@@ -38,8 +38,8 @@ dwm is an extremely fast, small, and dynamic window manager for X.
 - [X] Xmenu
 - [X] Flextile Deluxe
 - [X] hide vacant tags
-- [ ] IPC
-- [ ] DWMC
+- [X] IPC
+- [X] DWMC
 - [ ] Xrdb
 - [ ] Window Roles
 ** MAYBE
