@@ -1,11 +1,40 @@
+static const char col_bg[]   	= "#141414";
+static const char col_bg0[]   	= "#282828";
+static const char col_bg1[]   	= "#3c3836";
+static const char col_bg2[]   	= "#504945";
+static const char col_bg3[]   	= "#665c54";
+static const char col_bg4[]   	= "#7c6f64";
+
+static const char col_fg[]   	= "#ebdbb2";
+static const char col_fg0[]   	= "#d5c4a1";
+static const char col_fg1[]   	= "#bdae93";
+static const char col_fg2[]   	= "#a89984";
+
+static const char col_red[]     = "#cc241d";
+static const char col_green[]   = "#98971a";
+static const char col_yellow[]  = "#d79921";
+static const char col_blue[]    = "#458588";
+static const char col_magenta[] = "#b16286";
+static const char col_cyan[]    = "#689d6a";
+
+static const char col_red2[]     = "#fb4934";
+static const char col_green2[]   = "#b8bb26";
+static const char col_yellow2[]  = "#fabd2f";
+static const char col_blue2[]    = "#83a598";
+static const char col_magenta2[] = "#d3869b";
+static const char col_cyan2[]    = "#8ec07c";
+
+static const char col_blue3[]    = "#376a6c";
+static const char col_blue4[]    = "#305d5f";
+static const char col_blue5[]    = "#1B3536";
 #if GRUVBOX_DARK
 static const char *colors[][29]      = {
 // GRUVBOX DARK
 //          fg         bg        border
-    { "#928374", "#141414", "#282828" },        /* [0] 15 - Client Normal */
-    { "#458588", "#141414", "#ebdbb2" },        /* [1] 16 - Client Selected */
-    { "#cc241d", "#141414", "#cc241d" },        /* [2] 17 - Client urgent */
-    { "#d65d0e", "#141414", "#d65d0e" },        /* [3] 18 - Client Occupied */
+    [SchemeNorm] = { col_fg2, col_bg, col_bg0},        /* [0] 15 - Client Normal */
+    [SchemeSel]  = { col_blue, col_bg, col_blue},        /* [0] 15 - Client Normal */
+    [SchemeUrg]  = { "#cc241d", "#141414", "#cc241d" },        /* [2] 17 - Client urgent */
+    [SchemeOcc]  = { "#d65d0e", "#141414", "#d65d0e" },        /* [3] 18 - Client Occupied */
     // FG
     { "#cc241d", "#141414", "#cc241d" },        /* [4] 19 - FG_Red*/
     { "#458588", "#141414", "#458588" },        /* [5] 1a - FG_Blue */
@@ -29,15 +58,15 @@ static const char *colors[][29]      = {
     { "#141414", "#282828", "#282828" },        /* [22] 1f - FG_Black */
     { "#141414", "#a89984", "#a89984" },        /* [23] 19 - BG_Grey */
     // TAG
-    { "#3c3836", "#141414", "#282828" },        /* [24] 0E - Tag Normal*/
-    { "#458588", "#141414", "#458588" },        /* [25] 0E - Tag Selected*/
-    { "#cc241d", "#141414", "#cc241d" },        /* [26] 0E - Tag Urgent*/
-    { "#928374", "#141414", "#3c3836" },        /* [27] 0E - Tag occupied*/
+	[TagNorm] = { col_bg1, col_bg, col_bg0 },        /* [24] 0E - Tag Normal*/
+    [TagSel]  = { col_blue, col_bg, col_blue },        /* [25] 0E - Tag Selected*/
+    [TagUrg]  = { col_red, col_bg, col_red },        /* [26] 0E - Tag Urgent*/
+    [TagOcc]  = { col_blue4, col_bg, "#3c3836" },        /* [27] 0E - Tag occupied*/
     // BAR
-    { "#141414", "#ebdbb2", "#282828" },        /* [29]  1f - Bar Normal */
-    { "#141414", "#ebdbb2", "#282828" },        /* [30]  1f - Bar Selected */
-    { "#141414", "#cc241d", "#458588" },        /* [31]  17 - Bar Urgent */
-    { "#141414", "#d65d0e", "#d65d0e" },        /* [32]  17 - Bar Occupied */
+    [BarNorm] = { "#141414", "#ebdbb2", "#282828" },        /* [29]  1f - Bar Normal */
+    [BarSel]  = { "#141414", "#ebdbb2", "#282828" },        /* [30]  1f - Bar Selected */
+    [BarUrg]  = { "#141414", "#cc241d", "#458588" },        /* [31]  17 - Bar Urgent */
+    [BarOcc]  = { "#141414", "#d65d0e", "#d65d0e" },        /* [32]  17 - Bar Occupied */
 };
 #elif GRUVBOX_LIGHT
 static const char *colors[][3]      = {

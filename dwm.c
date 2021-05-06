@@ -2528,7 +2528,7 @@ setup(void)
 	/* init appearance */
 	scheme = ecalloc(LENGTH(colors), sizeof(Clr *));
 	for (i = 0; i < LENGTH(colors); i++)
-		scheme[i] = drw_scm_create(drw, colors[i], 3);
+		scheme[i] = drw_scm_create(drw, colors[i], ColCount);
 	#if SYSTRAY_PATCH
 	/* init system tray */
 	updatesystray();
@@ -3286,6 +3286,10 @@ main(int argc, char *argv[])
 		die("dwm: cannot get xcb connection\n");
 	#endif
 	checkotherwm();
+	#if XRDB_PATCH
+	XrmInitialize();
+	loadxrdb();
+	#endif // XRDB_PATCH
 	setup();
 #ifdef __OpenBSD__
 	#if SWALLOW_PATCH

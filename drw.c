@@ -5,6 +5,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xft/Xft.h>
 
+#include "patch.h"
 #include "drw.h"
 #include "util.h"
 
@@ -208,7 +209,14 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
 /* Wrapper to create color schemes. The caller has to call free(3) on the
  * returned color scheme when done using it. */
 Clr *
-drw_scm_create(Drw *drw, const char *clrnames[], size_t clrcount)
+drw_scm_create(
+		Drw *drw,
+		#if XRDB_PATCH
+        char *clrnames[],
+		#else
+        const char *clrnames[],
+		#endif
+        size_t clrcount)
 {
 	size_t i;
 	Clr *ret;

@@ -4,6 +4,9 @@
 #if STICKY_PATCH
 #include "sticky.h"
 #endif
+#if XRDB_PATCH
+#include "xrdb.h"
+#endif
 #if SWALLOW_PATCH
 #include "swallow.h"
 #endif

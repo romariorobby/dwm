@@ -4,6 +4,9 @@
 /*
  * THEMES
  * */
+
+#define XRDB_PATCH 1
+
 // if none selected fallback to default
 // GRUVBOX 
 #define GRUVBOX_DARK 1
@@ -19,6 +22,8 @@
 /*
  * WINDOW
  */
+
+#define VANITYGAPS_PATCH 1
 
 /* ATTACHDIR */
 // 1 or another

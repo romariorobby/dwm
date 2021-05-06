@@ -55,6 +55,9 @@ static Key keys[] = {
     /* All */
 	{ Mod3Mask,                     XK_comma,       incrgaps,				{.i = +1 } },
 	{ Mod3Mask,                     XK_period,      incrgaps,           	{.i = -1 } },
+    #if XRDB_PATCH
+	{ 0,                            XK_F12,         xrdb,                  {.v = NULL } },
+    #endif
     /* Inner */
 	/* { MODKEY|Mod1Mask,              XK_,            incrigaps,				{.i = +1 } }, */
 	/* { MODKEY|Mod1Mask|ShiftMask,    XK_,            incrigaps,           	{.i = -1 } }, */
