@@ -42,6 +42,7 @@ dwm is an extremely fast, small, and dynamic window manager for X.
 - [X] DWMC
 - [X] Xrdb
 - [ ] Window Roles
+- [ ] Status2D
 ** MAYBE
 - [ ] Multi Monitor Support?
 - [ ] Monitor Rules #B
