@@ -5,7 +5,7 @@
  * THEMES
  * */
 
-#define XRDB_PATCH 1
+#define XRDB_PATCH 0
 
 // if none selected fallback to default
 // GRUVBOX 
