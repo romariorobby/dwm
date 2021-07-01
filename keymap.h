@@ -11,13 +11,14 @@
 
 /* commands */
 /* static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL }; */
-static const char *termcmd[]  = { TERM, NULL };
+static const char *termcmd[]  = { TERM1, NULL };
 #if LAYOUTMENU_PATCH
 static const char *layoutmenu_cmd = "layoutmenu.sh";
 #endif // LAYOUTMENU_PATCH
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-	/* { MODKEY,             			XK_Return, 		spawn,          		{.v = termcmd } }, */
+	{ MODKEY,             			XK_Return, 		spawn,          		{.v = termcmd } },
+	{ MODKEY|ShiftMask,             XK_Return, 		spawn,          		SHCMD("dmenu_run") },
 	{ MODKEY,                       XK_b,      		togglebar,      		{0} },
 	{ MODKEY,                       XK_j,      		focusstack,     		{.i = -1 } },
 	{ MODKEY,                       XK_k,      		focusstack,     		{.i = +1 } },
